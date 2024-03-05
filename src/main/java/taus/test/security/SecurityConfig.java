@@ -32,6 +32,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import taus.test.entities.User;
 import taus.test.repositories.UserRepository;
+import taus.test.services.UserService;
 
 import java.util.List;
 
@@ -42,7 +43,7 @@ public class SecurityConfig {
 
     private RSAKey rsaKey;
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -61,11 +62,7 @@ public class SecurityConfig {
         return new UserDetailsManager() {
             @Override
             public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-                User user = userRepository.findByUsername(username);
-
-                if (user == null) {
-                    throw new UsernameNotFoundException("User not found with username: " + username);
-                }
+                User user = userService.getUserByUsername(username);
 
                 // Create UserDetails object using the fetched user details
                 return org.springframework.security.core.userdetails.User
@@ -79,7 +76,7 @@ public class SecurityConfig {
                 User userEntity = new User();
                 userEntity.setUsername(user.getUsername());
                 userEntity.setPassword(passwordEncoder().encode(user.getPassword()));
-                userRepository.save(userEntity);
+                userService.createUser(userEntity);
             }
 
             @Override
@@ -112,7 +109,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests( auth -> auth
-                        .requestMatchers("/token").permitAll()
+                        .requestMatchers("/login").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

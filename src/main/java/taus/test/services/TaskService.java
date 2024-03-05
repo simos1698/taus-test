@@ -19,7 +19,7 @@ public class TaskService {
     @Autowired
     private TaskRepository taskRepository;
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
     @Value("${maxTasks}")
     private int maxTasks;
 
@@ -39,7 +39,7 @@ public class TaskService {
     }
 
     public List<Task> getAllTasks(String username) {
-        Long connectedUserId= userRepository.findByUsername(username).getId();
+        Long connectedUserId= userService.getUserByUsername(username).getId();
 
         return taskRepository.findByUserId(connectedUserId);
     }
