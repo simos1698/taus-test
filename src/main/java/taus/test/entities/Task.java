@@ -25,6 +25,7 @@ public class Task {
     private String description;
 
     @Temporal(TemporalType.DATE)
+    @Column(name = "dueDate")
     private Date dueDate;
 
 }
