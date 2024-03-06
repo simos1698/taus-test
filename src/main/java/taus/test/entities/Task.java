@@ -3,6 +3,7 @@ package taus.test.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import taus.test.dtos.TaskDTO;
 
 import java.util.Date;
 
@@ -28,4 +29,20 @@ public class Task {
     @Column(name = "dueDate")
     private Date dueDate;
 
+    public Task(TaskDTO taskDTO, User user){
+        this.user = user;
+        this.title = taskDTO.title();
+        this.description = taskDTO.description();
+        this.dueDate = taskDTO.dueDate();
+    }
+
+    public TaskDTO toDTO() {
+        return TaskDTO.builder()
+        .id(id)
+        .username(user.getUsername())
+        .title(title)
+        .description(description)
+        .dueDate(dueDate)
+                .build();
+    }
 }
