@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import taus.test.dtos.TaskDTO;
 
 import java.util.Date;
+import java.util.Objects;
 
 @Entity
 @Table(name = "tasks")
@@ -44,5 +45,18 @@ public class Task {
         .description(description)
         .dueDate(dueDate)
                 .build();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Task task = (Task) o;
+        return Objects.equals(id, task.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

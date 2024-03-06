@@ -2,28 +2,55 @@ package taus.test.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import taus.test.dtos.TaskDTO;
 import taus.test.entities.Task;
 import taus.test.entities.User;
+import taus.test.events.TaskExpiredEvent;
 import taus.test.exceptions.BadTaskAttributesException;
 import taus.test.exceptions.TaskNotFoundException;
 import taus.test.exceptions.UnauthorizedTaskAccessException;
 import taus.test.exceptions.UserTaskLimitReachedException;
 import taus.test.repositories.TaskRepository;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@EnableScheduling
 public class TaskService {
 
     @Autowired
     private TaskRepository taskRepository;
     @Autowired
     private UserService userService;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
     @Value("${maxTasks}")
     private int maxTasks;
+    private List<Task> alreadyExpiredTasks = new ArrayList<>();
+
+    @Scheduled(fixedDelay = 5000) // Run every five seconds
+    public void checkForExpiredTasks() {
+        Date currentDate = new Date();
+        List<Task> expiredTasks = new ArrayList<>(taskRepository
+                .findAll()
+                .stream()
+                .filter(task -> currentDate.after(task.getDueDate()))
+                .toList());
+
+        expiredTasks.removeAll(alreadyExpiredTasks);
+
+        for (Task task : expiredTasks) {
+            eventPublisher.publishEvent(new TaskExpiredEvent(this,task.getId()));
+            alreadyExpiredTasks.add(task);
+        }
+    }
 
     public TaskDTO getTaskById(Long id, String username){
         Optional<Task> optionalTask = taskRepository.findById(id);
