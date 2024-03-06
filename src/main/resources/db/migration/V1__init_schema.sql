@@ -15,3 +15,5 @@ CREATE TABLE test.tasks (
     PRIMARY KEY (id),
     FOREIGN KEY (userId) REFERENCES users(id)
 );
+
+INSERT INTO users VALUES (1, "admin", "{bcrypt}$2a$12$rR6fImOTl1EjDKEn6kjEzucQkfG3K2oR3zT2nJKuHT6bmKIH7nSK6")
